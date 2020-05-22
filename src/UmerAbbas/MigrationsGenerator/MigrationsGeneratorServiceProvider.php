@@ -1,4 +1,6 @@
-<?php namespace Xethron\MigrationsGenerator;
+<?php
+
+namespace UmerAbbas\MigrationsGenerator;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -16,23 +18,22 @@ class MigrationsGeneratorServiceProvider extends ServiceProvider {
 	 *
 	 * @return void
 	 */
-	public function register()
-	{
+	public function register() {
 		$this->app->singleton('migration.generate',
-            function($app) {
-                return new MigrateGenerateCommand(
-                    $app->make('Way\Generators\Generator'),
-                    $app->make('Way\Generators\Filesystem\Filesystem'),
-                    $app->make('Way\Generators\Compilers\TemplateCompiler'),
-                    $app->make('migration.repository'),
-                    $app->make('config')
-                );
-            });
+			function ($app) {
+				return new MigrateGenerateCommand(
+					$app->make('Way\Generators\Generator'),
+					$app->make('Way\Generators\Filesystem\Filesystem'),
+					$app->make('Way\Generators\Compilers\TemplateCompiler'),
+					$app->make('migration.repository'),
+					$app->make('config')
+				);
+			});
 
 		$this->commands('migration.generate');
 
 		// Bind the Repository Interface to $app['migrations.repository']
-		$this->app->bind('Illuminate\Database\Migrations\MigrationRepositoryInterface', function($app) {
+		$this->app->bind('Illuminate\Database\Migrations\MigrationRepositoryInterface', function ($app) {
 			return $app['migration.repository'];
 		});
 	}
@@ -42,8 +43,7 @@ class MigrationsGeneratorServiceProvider extends ServiceProvider {
 	 *
 	 * @return void
 	 */
-	public function boot()
-	{
+	public function boot() {
 	}
 
 	/**
@@ -51,8 +51,7 @@ class MigrationsGeneratorServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
-	{
+	public function provides() {
 		return array();
 	}
 

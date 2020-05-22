@@ -1,4 +1,6 @@
-<?php namespace Xethron\MigrationsGenerator\Generators;
+<?php
+
+namespace UmerAbbas\MigrationsGenerator\Generators;
 
 use Illuminate\Support\Facades\DB;
 
@@ -37,14 +39,13 @@ class SchemaGenerator {
 	 * @param bool   $ignoreIndexNames
 	 * @param bool   $ignoreForeignKeyNames
 	 */
-	public function __construct($database, $ignoreIndexNames, $ignoreForeignKeyNames)
-	{
+	public function __construct($database, $ignoreIndexNames, $ignoreForeignKeyNames) {
 		$connection = DB::connection($database)->getDoctrineConnection();
 		$connection->getDatabasePlatform()->registerDoctrineTypeMapping('json', 'text');
 		$connection->getDatabasePlatform()->registerDoctrineTypeMapping('jsonb', 'text');
 		$connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 		$connection->getDatabasePlatform()->registerDoctrineTypeMapping('bit', 'boolean');
-		
+
 		// Postgres types
 		$connection->getDatabasePlatform()->registerDoctrineTypeMapping('_text', 'text');
 		$connection->getDatabasePlatform()->registerDoctrineTypeMapping('_int4', 'integer');
@@ -65,18 +66,15 @@ class SchemaGenerator {
 	/**
 	 * @return mixed
 	 */
-	public function getTables()
-	{
+	public function getTables() {
 		return $this->schema->listTableNames();
 	}
 
-	public function getFields($table)
-	{
+	public function getFields($table) {
 		return $this->fieldGenerator->generate($table, $this->schema, $this->database, $this->ignoreIndexNames);
 	}
 
-	public function getForeignKeyConstraints($table)
-	{
+	public function getForeignKeyConstraints($table) {
 		return $this->foreignKeyGenerator->generate($table, $this->schema, $this->ignoreForeignKeyNames);
 	}
 

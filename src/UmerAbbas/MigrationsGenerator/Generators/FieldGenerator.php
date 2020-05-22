@@ -1,4 +1,6 @@
-<?php namespace Xethron\MigrationsGenerator\Generators;
+<?php
+
+namespace UmerAbbas\MigrationsGenerator\Generators;
 
 use DB;
 
@@ -9,11 +11,11 @@ class FieldGenerator {
 	 * @var array
 	 */
 	protected $fieldTypeMap = [
-		'tinyint'  => 'tinyInteger',
+		'tinyint' => 'tinyInteger',
 		'smallint' => 'smallInteger',
-		'bigint'   => 'bigInteger',
+		'bigint' => 'bigInteger',
 		'datetime' => 'dateTime',
-		'blob'     => 'binary',
+		'blob' => 'binary',
 	];
 
 	/**
@@ -31,11 +33,12 @@ class FieldGenerator {
 	 *
 	 * @return array|bool
 	 */
-	public function generate($table, $schema, $database, $ignoreIndexNames)
-	{
+	public function generate($table, $schema, $database, $ignoreIndexNames) {
 		$this->database = $database;
-		$columns = $schema->listTableColumns( $table );
-		if ( empty( $columns ) ) return false;
+		$columns = $schema->listTableColumns($table);
+		if (empty($columns)) {
+			return false;
+		}
 
 		$indexGenerator = new IndexGenerator($table, $schema, $ignoreIndexNames);
 		$fields = $this->setEnum($this->getFields($columns, $indexGenerator), $table);
@@ -48,19 +51,20 @@ class FieldGenerator {
 	 * @param string $table
 	 * @return array
 	 */
-	protected function getEnum($table)
-	{
+	protected function getEnum($table) {
 		try {
 			$result = DB::table('information_schema.columns')
 				->where('table_schema', $this->database)
 				->where('table_name', $table)
 				->where('data_type', 'enum')
-				->get(['column_name','column_type']);
-			if ($result)
+				->get(['column_name', 'column_type']);
+			if ($result) {
 				return $result;
-			else
+			} else {
 				return [];
-		} catch (\Exception $e){
+			}
+
+		} catch (\Exception $e) {
 			return [];
 		}
 	}
@@ -70,8 +74,7 @@ class FieldGenerator {
 	 * @param string $table
 	 * @return array
 	 */
-	protected function setEnum(array $fields, $table)
-	{
+	protected function setEnum(array $fields, $table) {
 		foreach ($this->getEnum($table) as $column) {
 			$fields[$column->column_name]['type'] = 'enum';
 			$fields[$column->column_name]['args'] = str_replace('enum(', 'array(', $column->column_type);
@@ -84,16 +87,17 @@ class FieldGenerator {
 	 * @param IndexGenerator $indexGenerator
 	 * @return array
 	 */
-	protected function getFields($columns, IndexGenerator $indexGenerator)
-	{
+	protected function getFields($columns, IndexGenerator $indexGenerator) {
 		$fields = array();
 		foreach ($columns as $column) {
 			$name = $column->getName();
 			$type = $column->getType()->getName();
 			$length = $column->getLength();
 			$default = $column->getDefault();
-			if (is_bool($default))
+			if (is_bool($default)) {
 				$default = $default === true ? 1 : 0;
+			}
+
 			$nullable = (!$column->getNotNull());
 			$index = $indexGenerator->getIndex($name);
 			$comment = $column->getComment();
@@ -145,14 +149,31 @@ class FieldGenerator {
 				$args = $this->getLength($length);
 			}
 
-			if ($nullable) $decorators[] = 'nullable';
-			if ($default !== null) $decorators[] = $this->getDefault($default, $type);
-			if ($index) $decorators[] = $this->decorate($index->type, $index->name);
-			if ($comment) $decorators[] = "comment('" . addcslashes($comment, "\\'") . "')";
+			if ($nullable) {
+				$decorators[] = 'nullable';
+			}
+
+			if ($default !== null) {
+				$decorators[] = $this->getDefault($default, $type);
+			}
+
+			if ($index) {
+				$decorators[] = $this->decorate($index->type, $index->name);
+			}
+
+			if ($comment) {
+				$decorators[] = "comment('" . addcslashes($comment, "\\'") . "')";
+			}
 
 			$field = ['field' => $name, 'type' => $type];
-			if ($decorators) $field['decorators'] = $decorators;
-			if ($args) $field['args'] = $args;
+			if ($decorators) {
+				$field['decorators'] = $decorators;
+			}
+
+			if ($args) {
+				$field['args'] = $args;
+			}
+
 			$fields[$name] = $field;
 		}
 		return $fields;
@@ -162,8 +183,7 @@ class FieldGenerator {
 	 * @param int $length
 	 * @return int|void
 	 */
-	protected function getLength($length)
-	{
+	protected function getLength($length) {
 		if ($length and $length !== 255) {
 			return $length;
 		}
@@ -174,11 +194,12 @@ class FieldGenerator {
 	 * @param string $type
 	 * @return string
 	 */
-	protected function getDefault($default, &$type)
-	{
+	protected function getDefault($default, &$type) {
 		if (in_array($default, ['CURRENT_TIMESTAMP'], true)) {
-			if ($type == 'dateTime')
+			if ($type == 'dateTime') {
 				$type = 'timestamp';
+			}
+
 			$default = $this->decorate('DB::raw', $default);
 		} elseif (in_array($type, ['string', 'text']) or !is_numeric($default)) {
 			$default = $this->argsToString($default);
@@ -191,8 +212,7 @@ class FieldGenerator {
 	 * @param int $scale
 	 * @return string|void
 	 */
-	protected function getPrecision($precision, $scale)
-	{
+	protected function getPrecision($precision, $scale) {
 		if ($precision != 8 or $scale != 2) {
 			$result = $precision;
 			if ($scale != 2) {
@@ -207,13 +227,12 @@ class FieldGenerator {
 	 * @param string       $quotes
 	 * @return string
 	 */
-	protected function argsToString($args, $quotes = '\'')
-	{
-		if ( is_array( $args ) ) {
-			$separator = $quotes .', '. $quotes;
-			$args = implode($separator, str_replace($quotes, '\\'.$quotes, $args));
+	protected function argsToString($args, $quotes = '\'') {
+		if (is_array($args)) {
+			$separator = $quotes . ', ' . $quotes;
+			$args = implode($separator, str_replace($quotes, '\\' . $quotes, $args));
 		} else {
-			$args = str_replace($quotes, '\\'.$quotes, $args);
+			$args = str_replace($quotes, '\\' . $quotes, $args);
 		}
 
 		return $quotes . $args . $quotes;
@@ -226,9 +245,8 @@ class FieldGenerator {
 	 * @param string       $quotes
 	 * @return string
 	 */
-	protected function decorate($function, $args, $quotes = '\'')
-	{
-		if ( ! is_null( $args ) ) {
+	protected function decorate($function, $args, $quotes = '\'') {
+		if (!is_null($args)) {
 			$args = $this->argsToString($args, $quotes);
 			return $function . '(' . $args . ')';
 		} else {
@@ -240,8 +258,7 @@ class FieldGenerator {
 	 * @param IndexGenerator $indexGenerator
 	 * @return array
 	 */
-	protected function getMultiFieldIndexes(IndexGenerator $indexGenerator)
-	{
+	protected function getMultiFieldIndexes(IndexGenerator $indexGenerator) {
 		$indexes = array();
 		foreach ($indexGenerator->getMultiFieldIndexes() as $index) {
 			$indexArray = [

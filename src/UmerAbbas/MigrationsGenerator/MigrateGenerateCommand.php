@@ -1,21 +1,20 @@
-<?php namespace Xethron\MigrationsGenerator;
+<?php
 
-use Way\Generators\Commands\GeneratorCommand;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
-
-use Way\Generators\Generator;
-use Way\Generators\Filesystem\Filesystem;
-use Way\Generators\Compilers\TemplateCompiler;
-use Illuminate\Database\Migrations\MigrationRepositoryInterface;
-
-use Xethron\MigrationsGenerator\Generators\SchemaGenerator;
-use Xethron\MigrationsGenerator\Syntax\AddToTable;
-use Xethron\MigrationsGenerator\Syntax\DroppedTable;
-use Xethron\MigrationsGenerator\Syntax\AddForeignKeysToTable;
-use Xethron\MigrationsGenerator\Syntax\RemoveForeignKeysFromTable;
+namespace UmerAbbas\MigrationsGenerator;
 
 use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Database\Migrations\MigrationRepositoryInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
+use UmerAbbas\MigrationsGenerator\Generators\SchemaGenerator;
+use UmerAbbas\MigrationsGenerator\Syntax\AddForeignKeysToTable;
+use UmerAbbas\MigrationsGenerator\Syntax\AddToTable;
+use UmerAbbas\MigrationsGenerator\Syntax\DroppedTable;
+use UmerAbbas\MigrationsGenerator\Syntax\RemoveForeignKeysFromTable;
+use Way\Generators\Commands\GeneratorCommand;
+use Way\Generators\Compilers\TemplateCompiler;
+use Way\Generators\Filesystem\Filesystem;
+use Way\Generators\Generator;
 
 class MigrateGenerateCommand extends GeneratorCommand {
 
@@ -52,7 +51,7 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	protected $config;
 
 	/**
-	 * @var \Xethron\MigrationsGenerator\Generators\SchemaGenerator
+	 * @var \UmerAbbas\MigrationsGenerator\Generators\SchemaGenerator
 	 */
 	protected $schemaGenerator;
 
@@ -100,12 +99,12 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 */
 	protected $table;
 
-    /**
-     * @var string|null
-     */
-    protected $connection = null;
+	/**
+	 * @var string|null
+	 */
+	protected $connection = null;
 
-    /**
+	/**
 	 * @param \Way\Generators\Generator  $generator
 	 * @param \Way\Generators\Filesystem\Filesystem  $file
 	 * @param \Way\Generators\Compilers\TemplateCompiler  $compiler
@@ -118,14 +117,13 @@ class MigrateGenerateCommand extends GeneratorCommand {
 		TemplateCompiler $compiler,
 		MigrationRepositoryInterface $repository,
 		Config $config
-	)
-	{
+	) {
 		$this->file = $file;
 		$this->compiler = $compiler;
 		$this->repository = $repository;
 		$this->config = $config;
 
-		parent::__construct( $generator );
+		parent::__construct($generator);
 	}
 
 	/**
@@ -133,60 +131,58 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return void
 	 */
-	public function handle()
-	{
+	public function handle() {
 		$this->fire();
 	}
 
-    /**
+	/**
 	 * Execute the console command.
 	 *
 	 * @return void
 	 */
-	public function fire()
-	{
-		$this->info( 'Using connection: '. $this->option( 'connection' ) ."\n" );
-        if ($this->option('connection') !== $this->config->get('database.default')) {
-            $this->connection = $this->option('connection');
-        }
+	public function fire() {
+		$this->info('Using connection: ' . $this->option('connection') . "\n");
+		if ($this->option('connection') !== $this->config->get('database.default')) {
+			$this->connection = $this->option('connection');
+		}
 		$this->schemaGenerator = new SchemaGenerator(
 			$this->option('connection'),
 			$this->option('defaultIndexNames'),
 			$this->option('defaultFKNames')
 		);
 
-		if ( $this->argument( 'tables' ) ) {
-			$tables = explode( ',', $this->argument( 'tables' ) );
-		} elseif ( $this->option('tables') ) {
-			$tables = explode( ',', $this->option( 'tables' ) );
+		if ($this->argument('tables')) {
+			$tables = explode(',', $this->argument('tables'));
+		} elseif ($this->option('tables')) {
+			$tables = explode(',', $this->option('tables'));
 		} else {
 			$tables = $this->schemaGenerator->getTables();
 		}
 
 		$tables = $this->removeExcludedTables($tables);
-		$this->info( 'Generating migrations for: '. implode( ', ', $tables ) );
+		$this->info('Generating migrations for: ' . implode(', ', $tables));
 
-		if (!$this->option( 'no-interaction' )) {
+		if (!$this->option('no-interaction')) {
 			$this->log = $this->askYn('Do you want to log these migrations in the migrations table?');
 		}
 
-		if ( $this->log ) {
-			$this->repository->setSource( $this->option( 'connection' ) );
-			if ( ! $this->repository->repositoryExists() ) {
-				$options = array('--database' => $this->option( 'connection' ) );
+		if ($this->log) {
+			$this->repository->setSource($this->option('connection'));
+			if (!$this->repository->repositoryExists()) {
+				$options = array('--database' => $this->option('connection'));
 				$this->call('migrate:install', $options);
 			}
 			$batch = $this->repository->getNextBatchNumber();
-			$this->batch = $this->askNumeric( 'Next Batch Number is: '. $batch .'. We recommend using Batch Number 0 so that it becomes the "first" migration', 0 );
+			$this->batch = $this->askNumeric('Next Batch Number is: ' . $batch . '. We recommend using Batch Number 0 so that it becomes the "first" migration', 0);
 		}
 
-		$this->info( "Setting up Tables and Index Migrations" );
-		$this->datePrefix = date( 'Y_m_d_His' );
-		$this->generateTablesAndIndices( $tables );
-		$this->info( "\nSetting up Foreign Key Migrations\n" );
-		$this->datePrefix = date( 'Y_m_d_His', strtotime( '+1 second' ) );
-		$this->generateForeignKeys( $tables );
-		$this->info( "\nFinished!\n" );
+		$this->info("Setting up Tables and Index Migrations");
+		$this->datePrefix = date('Y_m_d_His');
+		$this->generateTablesAndIndices($tables);
+		$this->info("\nSetting up Foreign Key Migrations\n");
+		$this->datePrefix = date('Y_m_d_His', strtotime('+1 second'));
+		$this->generateForeignKeys($tables);
+		$this->info("\nFinished!\n");
 	}
 
 	/**
@@ -194,12 +190,12 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 * @param  string $question Question to ask
 	 * @return boolean          Answer from user
 	 */
-	protected function askYn( $question ) {
-		$answer = $this->ask( $question .' [Y/n] ');
-		while ( ! in_array( strtolower( $answer ), [ 'y', 'n', 'yes', 'no' ] ) ) {
+	protected function askYn($question) {
+		$answer = $this->ask($question . ' [Y/n] ');
+		while (!in_array(strtolower($answer), ['y', 'n', 'yes', 'no'])) {
 			$answer = $this->ask('Please choose either yes or no. ');
 		}
-		return in_array( strtolower( $answer ), [ 'y', 'yes' ] );
+		return in_array(strtolower($answer), ['y', 'yes']);
 	}
 
 	/**
@@ -208,20 +204,20 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 * @param  int|float $default  Default Value (optional)
 	 * @return int|float           Answer
 	 */
-	protected function askNumeric( $question, $default = null ) {
+	protected function askNumeric($question, $default = null) {
 		$ask = 'Your answer needs to be a numeric value';
 
-		if ( ! is_null( $default ) ) {
-			$question .= ' [Default: '. $default .'] ';
+		if (!is_null($default)) {
+			$question .= ' [Default: ' . $default . '] ';
 			$ask .= ' or blank for default';
 		}
 
-		$answer = $this->ask( $question );
+		$answer = $this->ask($question);
 
-		while ( ! is_numeric( $answer ) and ! ( $answer == '' and ! is_null( $default ) ) ) {
-			$answer = $this->ask( $ask .'. ');
+		while (!is_numeric($answer) and !($answer == '' and !is_null($default))) {
+			$answer = $this->ask($ask . '. ');
 		}
-		if ( $answer == '' ) {
+		if ($answer == '') {
 			$answer = $default;
 		}
 		return $answer;
@@ -233,14 +229,13 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 * @param  array $tables List of tables to create migrations for
 	 * @return void
 	 */
-	protected function generateTablesAndIndices( array $tables )
-	{
+	protected function generateTablesAndIndices(array $tables) {
 		$this->method = 'create';
 
-		foreach ( $tables as $table ) {
+		foreach ($tables as $table) {
 			$this->table = $table;
-			$this->migrationName = 'create_'. $this->table .'_table';
-			$this->fields = $this->schemaGenerator->getFields( $this->table );
+			$this->migrationName = 'create_' . $this->table . '_table';
+			$this->fields = $this->schemaGenerator->getFields($this->table);
 
 			$this->generate();
 		}
@@ -252,14 +247,13 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 * @param  array $tables List of tables to create migrations for
 	 * @return void
 	 */
-	protected function generateForeignKeys( array $tables )
-	{
+	protected function generateForeignKeys(array $tables) {
 		$this->method = 'table';
 
-		foreach ( $tables as $table ) {
+		foreach ($tables as $table) {
 			$this->table = $table;
-			$this->migrationName = 'add_foreign_keys_to_'. $this->table .'_table';
-			$this->fields = $this->schemaGenerator->getForeignKeyConstraints( $this->table );
+			$this->migrationName = 'add_foreign_keys_to_' . $this->table . '_table';
+			$this->fields = $this->schemaGenerator->getForeignKeyConstraints($this->table);
 
 			$this->generate();
 		}
@@ -270,12 +264,11 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return void
 	 */
-	protected function generate()
-	{
-		if ( $this->fields ) {
+	protected function generate() {
+		if ($this->fields) {
 			parent::fire();
 
-			if ( $this->log ) {
+			if ($this->log) {
 				$file = $this->datePrefix . '_' . $this->migrationName;
 				$this->repository->log($file, $this->batch);
 			}
@@ -287,9 +280,8 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return string
 	 */
-	protected function getFileGenerationPath()
-	{
-		$path = $this->getPathByOptionOrConfig( 'path', 'migration_target_path' );
+	protected function getFileGenerationPath() {
+		$path = $this->getPathByOptionOrConfig('path', 'migration_target_path');
 		$migrationName = str_replace('/', '_', $this->migrationName);
 		$fileName = $this->getDatePrefix() . '_' . $migrationName . '.php';
 
@@ -301,8 +293,7 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return string
 	 */
-	protected function getDatePrefix()
-	{
+	protected function getDatePrefix() {
 		return $this->datePrefix;
 	}
 
@@ -311,22 +302,21 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return array
 	 */
-	protected function getTemplateData()
-	{
-		if ( $this->method == 'create' ) {
+	protected function getTemplateData() {
+		if ($this->method == 'create') {
 			$up = (new AddToTable($this->file, $this->compiler))->run($this->fields, $this->table, $this->connection, 'create');
 			$down = (new DroppedTable)->drop($this->table, $this->connection);
 		}
 
-		if ( $this->method == 'table' ) {
+		if ($this->method == 'table') {
 			$up = (new AddForeignKeysToTable($this->file, $this->compiler))->run($this->fields, $this->table, $this->connection);
 			$down = (new RemoveForeignKeysFromTable($this->file, $this->compiler))->run($this->fields, $this->table, $this->connection);
 		}
 
 		return [
 			'CLASS' => ucwords(camel_case($this->migrationName)),
-			'UP'    => $up,
-			'DOWN'  => $down
+			'UP' => $up,
+			'DOWN' => $down,
 		];
 	}
 
@@ -335,9 +325,8 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return string
 	 */
-	protected function getTemplatePath()
-	{
-		return $this->getPathByOptionOrConfig( 'templatePath', 'migration_template_path' );
+	protected function getTemplatePath() {
+		return $this->getPathByOptionOrConfig('templatePath', 'migration_template_path');
 	}
 
 	/**
@@ -345,8 +334,7 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return array
 	 */
-	protected function getArguments()
-	{
+	protected function getArguments() {
 		return [
 			['tables', InputArgument::OPTIONAL, 'A list of Tables you wish to Generate Migrations for separated by a comma: users,posts,comments'],
 		];
@@ -357,12 +345,11 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return array
 	 */
-	protected function getOptions()
-	{
+	protected function getOptions() {
 		return [
-			['connection', 'c', InputOption::VALUE_OPTIONAL, 'The database connection to use.', $this->config->get( 'database.default' )],
+			['connection', 'c', InputOption::VALUE_OPTIONAL, 'The database connection to use.', $this->config->get('database.default')],
 			['tables', 't', InputOption::VALUE_OPTIONAL, 'A list of Tables you wish to Generate Migrations for separated by a comma: users,posts,comments'],
-			['ignore', 'i', InputOption::VALUE_OPTIONAL, 'A list of Tables you wish to ignore, separated by a comma: users,posts,comments' ],
+			['ignore', 'i', InputOption::VALUE_OPTIONAL, 'A list of Tables you wish to ignore, separated by a comma: users,posts,comments'],
 			['path', 'p', InputOption::VALUE_OPTIONAL, 'Where should the file be created?'],
 			['templatePath', 'tp', InputOption::VALUE_OPTIONAL, 'The location of the template for this generator'],
 			['defaultIndexNames', null, InputOption::VALUE_NONE, 'Don\'t use db index names for migrations'],
@@ -377,8 +364,7 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return array
 	 */
-	protected function removeExcludedTables( array $tables )
-	{
+	protected function removeExcludedTables(array $tables) {
 		$excludes = $this->getExcludedTables();
 		$tables = array_diff($tables, $excludes);
 
@@ -390,11 +376,10 @@ class MigrateGenerateCommand extends GeneratorCommand {
 	 *
 	 * @return array
 	 */
-	protected function getExcludedTables()
-	{
+	protected function getExcludedTables() {
 		$excludes = ['migrations'];
 		$ignore = $this->option('ignore');
-		if ( ! empty($ignore)) {
+		if (!empty($ignore)) {
 			return array_merge($excludes, explode(',', $ignore));
 		}
 

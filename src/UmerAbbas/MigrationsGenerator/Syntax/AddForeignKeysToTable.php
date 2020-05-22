@@ -1,8 +1,10 @@
-<?php namespace Xethron\MigrationsGenerator\Syntax;
+<?php
+
+namespace UmerAbbas\MigrationsGenerator\Syntax;
 
 /**
  * Class AddForeignKeysToTable
- * @package Xethron\MigrationsGenerator\Syntax
+ * @package UmerAbbas\MigrationsGenerator\Syntax
  */
 class AddForeignKeysToTable extends Table {
 
@@ -12,11 +14,10 @@ class AddForeignKeysToTable extends Table {
 	 * @param array $foreignKey
 	 * @return string
 	 */
-	protected function getItem(array $foreignKey)
-	{
+	protected function getItem(array $foreignKey) {
 		$value = $foreignKey['field'];
-		if ( ! empty($foreignKey['name'])) {
-			$value .= "', '". $foreignKey['name'];
+		if (!empty($foreignKey['name'])) {
+			$value .= "', '" . $foreignKey['name'];
 		}
 		$output = sprintf(
 			"\$table->foreign('%s')->references('%s')->on('%s')",
@@ -24,9 +25,6 @@ class AddForeignKeysToTable extends Table {
 			$foreignKey['references'],
 			$foreignKey['on']
 		);
-		if ($foreignKey['onUpdate']) {
-			$output .= sprintf("->onUpdate('%s')", $foreignKey['onUpdate']);
-		}
 		if ($foreignKey['onDelete']) {
 			$output .= sprintf("->onDelete('%s')", $foreignKey['onDelete']);
 		}

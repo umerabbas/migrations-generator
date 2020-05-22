@@ -1,8 +1,10 @@
-<?php namespace Xethron\MigrationsGenerator\Syntax;
+<?php
+
+namespace UmerAbbas\MigrationsGenerator\Syntax;
 
 /**
  * Class RemoveForeignKeysFromTable
- * @package Xethron\MigrationsGenerator\Syntax
+ * @package UmerAbbas\MigrationsGenerator\Syntax
  */
 class RemoveForeignKeysFromTable extends Table {
 
@@ -12,8 +14,7 @@ class RemoveForeignKeysFromTable extends Table {
 	 * @param array $foreignKey
 	 * @return string
 	 */
-	protected function getItem(array $foreignKey)
-	{
+	protected function getItem(array $foreignKey) {
 		$name = empty($foreignKey['name']) ? $this->createIndexName($foreignKey['field']) : $foreignKey['name'];
 		return sprintf("\$table->dropForeign('%s');", $name);
 	}
@@ -24,9 +25,8 @@ class RemoveForeignKeysFromTable extends Table {
 	 * @param  string  $column
 	 * @return string
 	 */
-	protected function createIndexName($column)
-	{
-		$index = strtolower($this->table.'_'.$column.'_foreign');
+	protected function createIndexName($column) {
+		$index = strtolower($this->table . '_' . $column . '_foreign');
 
 		return str_replace(array('-', '.'), '_', $index);
 	}

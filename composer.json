@@ -1,23 +1,23 @@
 {
-	"name": "xethron/migrations-generator",
+	"name": "umerabbas/migrations-generator",
 	"description": "Generates Laravel Migrations from an existing database",
 	"keywords": ["laravel", "migration", "generator", "migrations", "artisan"],
 	"license": "MIT",
 	"authors": [
 		{
-			"name": "Bernhard Breytenbach",
-			"email": "bernhard@coffeecode.co.za"
+			"name": "Umer Abbas",
+			"email": "dev@greyneon.com"
 		}
 	],
 	"require": {
-		"php": ">=5.4.0",
-		"illuminate/support": ">=4.1",
+		"php": ">=7.2.0",
+		"illuminate/support": ">=5.8",
 		"xethron/laravel-4-generators": "~3.1.0",
 		"doctrine/dbal": "~2.4"
 	},
 	"autoload": {
 		"psr-0": {
-			"Xethron\\MigrationsGenerator": "src/"
+			"UmerAbbas\\MigrationsGenerator": "src/"
 		}
 	},
 	"require-dev": {
@@ -30,7 +30,7 @@
 		"laravel": {
 			"providers": [
 				"Way\\Generators\\GeneratorsServiceProvider",
-				"Xethron\\MigrationsGenerator\\MigrationsGeneratorServiceProvider"
+				"UmerAbbas\\MigrationsGenerator\\MigrationsGeneratorServiceProvider"
 			]
 		}
 	}

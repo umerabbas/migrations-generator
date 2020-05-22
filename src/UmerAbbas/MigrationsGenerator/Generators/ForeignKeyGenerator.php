@@ -1,4 +1,6 @@
-<?php namespace Xethron\MigrationsGenerator\Generators;
+<?php
+
+namespace UmerAbbas\MigrationsGenerator\Generators;
 
 class ForeignKeyGenerator {
 
@@ -16,22 +18,22 @@ class ForeignKeyGenerator {
 	 *
 	 * @return array
 	 */
-	public function generate($table, $schema, $ignoreForeignKeyNames)
-	{
+	public function generate($table, $schema, $ignoreForeignKeyNames) {
 		$this->table = $table;
 		$fields = [];
 
 		$foreignKeys = $schema->listTableForeignKeys($table);
 
-		if ( empty( $foreignKeys ) ) return array();
+		if (empty($foreignKeys)) {
+			return array();
+		}
 
-		foreach ( $foreignKeys as $foreignKey ) {
+		foreach ($foreignKeys as $foreignKey) {
 			$fields[] = [
 				'name' => $this->getName($foreignKey, $ignoreForeignKeyNames),
 				'field' => $foreignKey->getLocalColumns()[0],
 				'references' => $foreignKey->getForeignColumns()[0],
 				'on' => $foreignKey->getForeignTableName(),
-				'onUpdate' => $foreignKey->hasOption('onUpdate') ? $foreignKey->getOption('onUpdate') : 'RESTRICT',
 				'onDelete' => $foreignKey->hasOption('onDelete') ? $foreignKey->getOption('onDelete') : 'RESTRICT',
 			];
 		}
@@ -66,9 +68,8 @@ class ForeignKeyGenerator {
 	 * @param  string  $column
 	 * @return string
 	 */
-	protected function createIndexName($column)
-	{
-		$index = strtolower($this->table.'_'.$column.'_foreign');
+	protected function createIndexName($column) {
+		$index = strtolower($this->table . '_' . $column . '_foreign');
 
 		return str_replace(array('-', '.'), '_', $index);
 	}

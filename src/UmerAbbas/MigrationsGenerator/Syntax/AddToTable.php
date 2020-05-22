@@ -1,8 +1,10 @@
-<?php namespace Xethron\MigrationsGenerator\Syntax;
+<?php
+
+namespace UmerAbbas\MigrationsGenerator\Syntax;
 
 /**
  * Class AddToTable
- * @package Xethron\MigrationsGenerator\Syntax
+ * @package UmerAbbas\MigrationsGenerator\Syntax
  */
 class AddToTable extends Table {
 
@@ -12,14 +14,13 @@ class AddToTable extends Table {
 	 * @param array $field
 	 * @return string
 	 */
-	protected function getItem(array $field)
-	{
+	protected function getItem(array $field) {
 		$property = $field['field'];
 
 		// If the field is an array,
 		// make it an array in the Migration
 		if (is_array($property)) {
-			$property = "['". implode("','", $property) ."']";
+			$property = "['" . implode("','", $property) . "']";
 		} else {
 			$property = $property ? "'$property'" : null;
 		}
@@ -43,7 +44,7 @@ class AddToTable extends Table {
 			);
 		}
 		if (isset($field['decorators'])) {
-			$output .= $this->addDecorators( $field['decorators'] );
+			$output .= $this->addDecorators($field['decorators']);
 		}
 		return $output . ';';
 	}
